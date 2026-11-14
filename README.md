@@ -4,7 +4,7 @@
 
 ## What it does
 
-- Runs at **:07, :22, :37, and :52** during **08:00–22:59 IST**. The scheduler publishes up to the maximum **actually returned by Meta**, spread over 15 active hours. Multiple check-ins are not extra guaranteed posts.
+- Runs at **:07, :22, :37, and :52** from **8 AM through 9 PM IST**, then has its final checkpoint at **10:00 PM IST**. The scheduler publishes up to the maximum **actually returned by Meta**, spread over 15 active hours. Multiple check-ins are not extra guaranteed posts.
 - Instagram API quota includes feed posts **and** Stories. Our design allocates one of each per question, plus a matching Facebook Page feed post. With an account quota of 50 Instagram media items in a rolling 24 hours, this plans **25 feed posts + 25 Stories + 25 Facebook posts**. At quota 100, it plans **50 feed posts + 50 Stories + 50 Facebook posts**. Existing API posts consume allowance, and rate limits or missing verified questions can reduce actual output.
 - Use `GET /{IG_USER_ID}/content_publishing_limit?fields=quota_usage,config` to read the live rolling limit. Meta documentation currently contains both 50 and 100; never hard-code either for live publishing.
 - Creates a **1080 × 1350 feed question image** and a **1080 × 1920 Instagram Story image**.
@@ -34,7 +34,7 @@
 
 7. **Approve the reusable template once:** When you are satisfied with the feed graphic, Story graphic, wording, and automated original-practice policy, change \`config/brand.json\` → \`template_approved: true\`. This is a persistent design authorization, not a per-post prompt. Leave the repository variable disabled until you have checked the Meta scopes.
 
-8. **Enable real publishing deliberately:** In [Repository Settings — Actions variables](../../settings/variables/actions), set the *repository variable* \`PUBLISH_ENABLED\` to \`true\`. It defaults to disabled if missing. Run **one** manual workflow with **live checked** *within 08:00–22:59 IST* and **no preview_slot**. Depending on which checkpoint is due, this may publish a feed, Story, and Facebook post; verify live results on Meta before leaving the scheduler running.
+8. **Enable real publishing deliberately:** In [Repository Settings — Actions variables](../../settings/variables/actions), set the *repository variable* \`PUBLISH_ENABLED\` to \`true\`. It defaults to disabled if missing. Run **one** manual workflow with **live checked** *within 08:00–22:00 IST* and **no preview_slot**. Depending on which checkpoint is due, this may publish a feed, Story, and Facebook post; verify live results on Meta before leaving the scheduler running.
 
 9. **Monitor and stop:** Use [Actions](../../actions) to inspect failures. To stop all live posts immediately, set \`PUBLISH_ENABLED=false\`. To pause the entire schedule, disable the workflow in Actions. The local generator and GitHub check-ins need no paid LLM or always-on Mac.
 
