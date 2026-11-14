@@ -26,6 +26,10 @@ class QuotaSchedulingTests(unittest.TestCase):
         self.assertEqual(len(b.due_pairs(50, now)), 1)
         self.assertTrue(all(x.startswith('2026-11-17T08-') for x in b.due_pairs(100, now)))
 
+    def test_final_slot_releases_remaining_quota_at_2200(self):
+        last = datetime(2026, 11, 17, 22, 0, tzinfo=IST)
+        self.assertEqual(len(b.due_pairs(100, last)), b.hourly_pairs(100, 22))
+
     def test_each_pair_distinct_and_mathematically_checked(self):
         ids = []
         for h in range(8, 23):
