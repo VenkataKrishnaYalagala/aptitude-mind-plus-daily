@@ -81,7 +81,7 @@ def process(mode: str, *, preview=False, slot=None, preview_quota=KNOWN_PREVIEW_
         due = due_pairs(total, now, all_hour=True)
     else:
         total, used = account_quota()
-        due = due_pairs(total, now)
+        due = due_pairs(total, now, all_hour=(mode == 'prepare'))
     print(f'Account quota {total} / 24h; used {used}; hour {now.hour:02}; due pairs {len(due)}; mode={mode}')
     if mode == 'prepare':
         for sid in due:
