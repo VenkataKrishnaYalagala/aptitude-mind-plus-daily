@@ -1,0 +1,12 @@
+{
+  "name": "aptitude-mind-plus-site",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Minimal free-first education website with private question moderation and course enquiries",
+  "scripts": {
+    "test": "node tests/backend.test.mjs",
+    "serve": "python3 -m http.server 8000 --directory public",
+    "build": "python3 build_site.py"
+  }
+}
