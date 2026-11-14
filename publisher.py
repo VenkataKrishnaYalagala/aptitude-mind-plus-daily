@@ -169,7 +169,7 @@ def render(record, path, story=False):
         d.rounded_rectangle((90,1110,990,1248),radius=24,fill=(221,247,243))
         d.text((120,1150),'ANSWER + STEPS IN CAPTION',
                font=font(31,True),fill=(18,51,82))
-        d.text((100,1295),'Save for your next revision',
+        d.text((100,1260),'Save for your next revision',
                font=font(23),fill=(70,94,115))
     path.parent.mkdir(parents=True,exist_ok=True)
     image.save(path,'JPEG',quality=90,optimize=True)
