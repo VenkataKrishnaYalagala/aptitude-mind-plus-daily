@@ -1,0 +1,17 @@
+{
+  "brand": "Aptitude Mind Plus",
+  "timezone": "Asia/Kolkata",
+  "hours_ist": [
+    8,
+    22
+  ],
+  "expected_posts_per_day": 15,
+  "channels": [
+    "instagram_feed",
+    "instagram_story",
+    "facebook_page_feed"
+  ],
+  "template_approved": false,
+  "template_version": 1,
+  "content_policy": "Only mathematically checked original practice until official PYQs are individually verified and approved"
+}
