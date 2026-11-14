@@ -1,10 +1,12 @@
 name: AMP Quota-Aware Instagram and Facebook
 on:
   schedule:
-    # Four opportunities per hour, 08:00 through 22:59 IST.
+    # Four checkpoints per hour from 08:00 to 21:59 IST; final slot at 22:00.
     # The queue checks Meta's actual rolling 24-hour publishing quota.
     # These are checkpoints, NOT four mandatory posts every hour.
-    - cron: '7,22,37,52 8-22 * * *'
+    - cron: '7,22,37,52 8-21 * * *'
+      timezone: Asia/Kolkata
+    - cron: '0 22 * * *'
       timezone: Asia/Kolkata
   workflow_dispatch:
     inputs:
