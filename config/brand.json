@@ -16,7 +16,7 @@
   "publishing_policy": {
     "mode": "maximum_verified_capacity_within_live_instagram_api_quota",
     "quota_source": "GET /{IG_USER_ID}/content_publishing_limit",
-    "instagram_pacing": "Spread across 08:00-22:59 IST via four check-ins each hour",
+    "instagram_pacing": "Spread across 08:00-21:59 IST, with a final scheduled slot at 22:00",
     "daily_feed_story_ratio": "One Instagram feed item plus one Instagram Story per verified question",
     "facebook_page": "One Facebook Page feed post per Instagram feed question",
     "review_policy": "Reuse approved designs; only arithmetic-checked original practice unless official PYQ and answer key are independently verified",
