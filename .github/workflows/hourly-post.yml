@@ -7,6 +7,11 @@ on:
       timezone: Asia/Kolkata
   workflow_dispatch:
     inputs:
+      preview_slot:
+        description: 'Optional preview slot YYYY-MM-DDTHH (08..22 IST); ignored for scheduled runs'
+        type: string
+        required: false
+        default: ''
       live:
         description: 'Actually publish (requires approval gates and Meta secrets)'
         type: boolean
@@ -32,7 +37,20 @@ jobs:
       - name: Run publisher safety and mathematics tests
         run: python -m unittest discover -s tests -v
       - name: Generate mathematically checked practice question and images
-        run: python publisher.py prepare
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_LIVE: ${{ inputs.live }}
+          PREVIEW_SLOT: ${{ inputs.preview_slot }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_LIVE" = "true" ] && [ -n "$PREVIEW_SLOT" ]; then
+            echo 'A custom slot may only be used for previews.'
+            exit 1
+          fi
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_LIVE" != "true" ] && [ -n "$PREVIEW_SLOT" ]; then
+            python publisher.py prepare --slot "$PREVIEW_SLOT"
+          else
+            python publisher.py prepare
+          fi
       - name: Save public cards before invoking Meta
         run: |
           git config user.name 'github-actions[bot]'
@@ -53,9 +71,14 @@ jobs:
           META_API_VERSION: v27.0
           EVENT_NAME: ${{ github.event_name }}
           MANUAL_LIVE: ${{ inputs.live }}
+          PREVIEW_SLOT: ${{ inputs.preview_slot }}
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_LIVE" != "true" ]; then
-            python publisher.py publish
+            if [ -n "$PREVIEW_SLOT" ]; then
+              python publisher.py publish --slot "$PREVIEW_SLOT"
+            else
+              python publisher.py publish
+            fi
           else
             python publisher.py publish --live
           fi
