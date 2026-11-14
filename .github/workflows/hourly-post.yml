@@ -1,31 +1,42 @@
-name: AMP Hourly Instagram and Facebook
+name: AMP Quota-Aware Instagram and Facebook
 on:
   schedule:
-    # 15 daily IST slots: 08:00, 09:00 ... 22:00
-    # Minute 20 retries the same slot and is not a second post.
-    - cron: '0,20 8-22 * * *'
+    # Four opportunities per hour, 08:00 through 22:59 IST.
+    # The queue checks Meta's actual rolling 24-hour publishing quota.
+    # These are checkpoints, NOT four mandatory posts every hour.
+    - cron: '7,22,37,52 8-22 * * *'
       timezone: Asia/Kolkata
   workflow_dispatch:
     inputs:
       preview_slot:
-        description: 'Optional preview slot YYYY-MM-DDTHH (08..22 IST); ignored for scheduled runs'
+        description: 'Optional preview hour YYYY-MM-DDTHH (e.g. 2026-11-15T08)'
         type: string
         required: false
         default: ''
+      preview_quota:
+        description: 'For previews only: compare 50 vs 100 Instagram items per 24h'
+        type: choice
+        options: ['50', '100']
+        required: false
+        default: '100'
       live:
-        description: 'Actually publish (requires approval gates and Meta secrets)'
+        description: 'Publish live ONLY after both approval gates and Meta authorization'
         type: boolean
         required: false
         default: false
+
 permissions:
   contents: write
+
 concurrency:
-  group: amp-hourly-publishing
+  group: amp-social-publishing
   cancel-in-progress: false
+
 jobs:
-  hourly:
+  publish:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.PUBLISH_ENABLED == 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,34 +44,45 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install -r requirements.txt
-      - name: Run publisher safety and mathematics tests
+      - name: Install minimal local image dependency
+        run: python -m pip install -r requirements.txt
+      - name: Verify maths, safety and quota distribution
         run: python -m unittest discover -s tests -v
-      - name: Generate mathematically checked practice question and images
+      - name: Prepare image cards and queue
         env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          PUBLISH_ENABLED: ${{ vars.PUBLISH_ENABLED }}
           EVENT_NAME: ${{ github.event_name }}
           MANUAL_LIVE: ${{ inputs.live }}
           PREVIEW_SLOT: ${{ inputs.preview_slot }}
+          PREVIEW_QUOTA: ${{ inputs.preview_quota }}
+        shell: bash
         run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_LIVE" = "true" ] && [ -n "$PREVIEW_SLOT" ]; then
-            echo 'A custom slot may only be used for previews.'
-            exit 1
-          fi
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_LIVE" != "true" ] && [ -n "$PREVIEW_SLOT" ]; then
-            python publisher.py prepare --slot "$PREVIEW_SLOT"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_LIVE" != "true" ]; then
+            if [ -n "$PREVIEW_SLOT" ]; then
+              python batch_publisher.py prepare --preview --slot "$PREVIEW_SLOT" --preview-quota "${PREVIEW_QUOTA:-100}"
+            else
+              python batch_publisher.py prepare --preview --preview-quota "${PREVIEW_QUOTA:-100}"
+            fi
           else
-            python publisher.py prepare
+            if [ -n "$PREVIEW_SLOT" ]; then
+              echo 'Custom hour cannot be used for live publishing'
+              exit 1
+            fi
+            python batch_publisher.py prepare
           fi
-      - name: Save public cards before invoking Meta
+      - name: Save cards to their public media URLs
+        shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add docs/cards data/queue.json
           if ! git diff --cached --quiet; then
-            git commit -m 'content: prepare hourly aptitude card'
+            git commit -m 'content: prepare verified aptitude cards'
             git push origin HEAD
           fi
-      - name: Publish if enabled (safe by default)
+      - name: Publish due media (requires both approval gates)
         env:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
@@ -72,13 +94,15 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           MANUAL_LIVE: ${{ inputs.live }}
           PREVIEW_SLOT: ${{ inputs.preview_slot }}
+          PREVIEW_QUOTA: ${{ inputs.preview_quota }}
+        shell: bash
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_LIVE" != "true" ]; then
             if [ -n "$PREVIEW_SLOT" ]; then
-              python publisher.py publish --slot "$PREVIEW_SLOT"
+              python batch_publisher.py publish --preview --slot "$PREVIEW_SLOT" --preview-quota "${PREVIEW_QUOTA:-100}"
             else
-              python publisher.py publish
+              python batch_publisher.py publish --preview --preview-quota "${PREVIEW_QUOTA:-100}"
             fi
           else
-            python publisher.py publish --live
+            python batch_publisher.py publish
           fi
