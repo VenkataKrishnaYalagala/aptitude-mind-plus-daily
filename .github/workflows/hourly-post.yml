@@ -1,0 +1,59 @@
+name: AMP Hourly Instagram and Facebook
+on:
+  schedule:
+    # 15 daily IST slots: 08:00, 09:00 ... 22:00
+    # Minute 20 retries the same slot and is not a second post.
+    - cron: '0,20 8-22 * * *'
+      timezone: Asia/Kolkata
+  workflow_dispatch:
+    inputs:
+      live:
+        description: 'Actually publish (requires approval gates and Meta secrets)'
+        type: boolean
+        required: false
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: amp-hourly-publishing
+  cancel-in-progress: false
+jobs:
+  hourly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - name: Generate mathematically checked practice question and images
+        run: python publisher.py prepare
+      - name: Save public cards before invoking Meta
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/cards data/queue.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'content: prepare hourly aptitude card'
+            git push origin HEAD
+          fi
+      - name: Publish if enabled (safe by default)
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
+          PUBLISH_ENABLED: ${{ vars.PUBLISH_ENABLED }}
+          META_API_VERSION: v27.0
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_LIVE: ${{ inputs.live }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_LIVE" != "true" ]; then
+            python publisher.py publish
+          else
+            python publisher.py publish --live
+          fi
