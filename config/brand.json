@@ -5,7 +5,6 @@
     8,
     22
   ],
-  "expected_posts_per_day": 15,
   "channels": [
     "instagram_feed",
     "instagram_story",
@@ -13,5 +12,14 @@
   ],
   "template_approved": false,
   "template_version": 1,
-  "content_policy": "Only mathematically checked original practice until official PYQs are individually verified and approved"
+  "content_policy": "Only mathematically checked original practice until official PYQs are individually verified and approved",
+  "publishing_policy": {
+    "mode": "maximum_verified_capacity_within_live_instagram_api_quota",
+    "quota_source": "GET /{IG_USER_ID}/content_publishing_limit",
+    "instagram_pacing": "Spread across 08:00-22:59 IST via four check-ins each hour",
+    "daily_feed_story_ratio": "One Instagram feed item plus one Instagram Story per verified question",
+    "facebook_page": "One Facebook Page feed post per Instagram feed question",
+    "review_policy": "Reuse approved designs; only arithmetic-checked original practice unless official PYQ and answer key are independently verified",
+    "live_enabled": false
+  }
 }
