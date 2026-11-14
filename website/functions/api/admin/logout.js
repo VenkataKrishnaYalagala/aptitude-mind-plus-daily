@@ -1,2 +1,0 @@
-import {json,checkOrigin,fail,sessionCookie} from '../_helpers.js';
-export async function onRequestPost({request}){if(!checkOrigin(request))return fail('Invalid request origin',403);return json({authenticated:false},200,{'Set-Cookie':sessionCookie(request,'',true)});}

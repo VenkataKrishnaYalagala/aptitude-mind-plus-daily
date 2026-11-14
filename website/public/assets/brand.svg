@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Aptitude Mind Plus mark">
- <defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2d74f9"/><stop offset="1" stop-color="#1643c4"/></linearGradient></defs>
- <rect x="0" y="0" width="64" height="64" rx="17" fill="url(#b)"/>
- <path d="M15 43 26.4 20h6.5l11.3 23h-8.4l-2.1-4.7H24L21.9 43zM26.4 32h4.9l-2.5-5.4z" fill="#fff"/>
- <path d="M46 17v16m-8-8h16" stroke="#a5eeef" stroke-width="4" stroke-linecap="round"/>
-</svg>
