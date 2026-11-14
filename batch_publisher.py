@@ -34,7 +34,7 @@ def due_pairs(quota_total: int, current: datetime, all_hour=False) -> list[str]:
     for i in range(1, amount + 1):
         # Space posts out, rather than publishing all media together at 8 AM.
         due_minute = ((2 * i - 1) * 60) // (2 * amount)
-        if all_hour or now.minute >= due_minute:
+        if all_hour or now.hour == 22 or now.minute >= due_minute:
             due.append(f'{hour_key}-{i:02d}')
     return due
 
