@@ -34,10 +34,12 @@ def sample_number(slot, label, low, high):
 
 
 def create_record(slot):
-    dt = datetime.strptime(slot, '%Y-%m-%dT%H').replace(tzinfo=IST)
+    if len(slot) not in (13, 16) or (len(slot) == 16 and (slot[13] != '-' or not slot[14:].isdigit())):
+        raise ValueError('Invalid publishing slot identifier')
+    dt = datetime.strptime(slot[:13], '%Y-%m-%dT%H').replace(tzinfo=IST)
     if dt.hour not in HOURS:
         raise ValueError('Invalid publishing hour')
-    kind = (dt.date().toordinal() + dt.hour) % 7
+    kind = (dt.date().toordinal() + dt.hour + (int(slot[-2:]) if len(slot) == 16 else 0)) % 7
     if kind == 0:
         n = 100 * sample_number(slot, 'n', 4, 65)
         pct = [10, 15, 20, 25, 40][sample_number(slot, 'pct', 0, 4)]
