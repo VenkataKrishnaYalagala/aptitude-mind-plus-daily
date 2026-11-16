@@ -16,33 +16,33 @@
 
 ## Setup — do in order
 
-1. **Review the template:** Run GitHub [Actions](../../actions) → **AMP Quota-Aware Instagram and Facebook** → **Run workflow**. Leave **live unchecked**. If the current IST time is outside 08:00–22:00, set \`preview_slot\` to a valid sample such as \`2026-11-15T08\`. The action creates public images in [docs/cards](docs/cards), but does not post to Meta. Examine feed and Story screenshots and caption.
+1. **Review the template:** Run GitHub [Actions](../../actions) → **AMP Quota-Aware Instagram and Facebook** → **Run workflow**. Leave **live unchecked**. If the current IST time is outside 08:00–22:00, set `preview_slot` to a valid sample such as `2026-11-15T08`. The action creates public images in [docs/cards](docs/cards), but does not post to Meta. Examine feed and Story screenshots and caption.
 
 2. **Set up Meta Professional accounts:** Use an Instagram **Business account** for the full feed-and-Story workflow, linked to a Facebook Page you manage with content-creation access. Check the association in [Meta Business Suite](https://business.facebook.com/). A personal account is not eligible for this programmatic setup.
 
-3. **Create a Meta developer app:** Visit [Meta for Developers](https://developers.facebook.com/apps/). Use **Facebook Login for Business** and Instagram Graph API (Facebook Login path), because this implementation publishes to Instagram via \`graph.facebook.com\` and also to a Facebook Page. Grant the required permissions to your app user as applicable: \`instagram_basic\`, \`instagram_content_publish\`, \`pages_show_list\`, \`pages_read_engagement\`, and \`pages_manage_posts\`. Meta may require additional review or access levels depending on app mode and account roles. Follow the current official dashboard prompts.
+3. **Create a Meta developer app:** Visit [Meta for Developers](https://developers.facebook.com/apps/). Use **Facebook Login for Business** and Instagram Graph API (Facebook Login path), because this implementation publishes to Instagram via `graph.facebook.com` and also to a Facebook Page. Grant the required permissions to your app user as applicable: `instagram_basic`, `instagram_content_publish`, `pages_show_list`, `pages_read_engagement`, and `pages_manage_posts`. Meta may require additional review or access levels depending on app mode and account roles. Follow the current official dashboard prompts.
 
-4. **Discover IDs/tokens using Meta's official tools (do not paste them into ChatGPT):** Use the Meta Graph API Explorer with your app and approved permissions. A user token with Page permissions can query \`GET /me/accounts\` to identify the Page and obtain its Page token. Use \`GET /{PAGE_ID}?fields=instagram_business_account\` to identify the linked Instagram Business account ID. The Instagram publishing user token and Facebook Page posting token may differ. Check actual token permission scopes and expiration in Meta's token tools.
+4. **Discover IDs/tokens using Meta's official tools (do not paste them into ChatGPT):** Use the Meta Graph API Explorer with your app and approved permissions. A user token with Page permissions can query `GET /me/accounts` to identify the Page and obtain its Page token. Use `GET /{PAGE_ID}?fields=instagram_business_account` to identify the linked Instagram Business account ID. The Instagram publishing user token and Facebook Page posting token may differ. Check actual token permission scopes and expiration in Meta's token tools.
 
 5. **Enter secrets on GitHub:** Open [Repository Settings — Actions secrets](../../settings/secrets/actions). Add **repository secrets** (not variables, never commits or chat messages):
-   - \`IG_USER_ID\` — the linked Instagram Business account ID.
-   - \`IG_ACCESS_TOKEN\` — a Facebook Login token with authorized Instagram publishing rights.
-   - \`FB_PAGE_ID\` — your Facebook Page ID.
-   - \`FB_PAGE_ACCESS_TOKEN\` — a Page token allowed to create Page photo posts.
+   - `IG_USER_ID` — the linked Instagram Business account ID.
+   - `IG_ACCESS_TOKEN` — a Facebook Login token with authorized Instagram publishing rights.
+   - `FB_PAGE_ID` — your Facebook Page ID.
+   - `FB_PAGE_ACCESS_TOKEN` — a Page token allowed to create Page photo posts.
 
 6. **Test with the approval gates OFF:** Run the workflow manually with **live unchecked** and inspect the generated cards, captions, logs, and the test results. The default action path does not contact Meta to publish.
 
-7. **Approve the reusable template once:** When you are satisfied with the feed graphic, Story graphic, wording, and automated original-practice policy, change \`config/brand.json\` → \`template_approved: true\`. This is a persistent design authorization, not a per-post prompt. Leave the repository variable disabled until you have checked the Meta scopes.
+7. **Approve the reusable template once:** When you are satisfied with the feed graphic, Story graphic, wording, and automated original-practice policy, change `config/brand.json` → `template_approved: true`. This is a persistent design authorization, not a per-post prompt. Leave the repository variable disabled until you have checked the Meta scopes.
 
-8. **Enable real publishing deliberately:** In [Repository Settings — Actions variables](../../settings/variables/actions), set the *repository variable* \`PUBLISH_ENABLED\` to \`true\`. It defaults to disabled if missing. Run **one** manual workflow with **live checked** *within 08:00–22:00 IST* and **no preview_slot**. Depending on which checkpoint is due, this may publish a feed, Story, and Facebook post; verify live results on Meta before leaving the scheduler running.
+8. **Enable real publishing deliberately:** In [Repository Settings — Actions variables](../../settings/variables/actions), set the *repository variable* `PUBLISH_ENABLED` to `true`. It defaults to disabled if missing. Run **one** manual workflow with **live checked** *within 08:00–22:00 IST* and **no preview_slot**. Depending on which checkpoint is due, this may publish a feed, Story, and Facebook post; verify live results on Meta before leaving the scheduler running.
 
-9. **Monitor and stop:** Use [Actions](../../actions) to inspect failures. To stop all live posts immediately, set \`PUBLISH_ENABLED=false\`. To pause the entire schedule, disable the workflow in Actions. The local generator and GitHub check-ins need no paid LLM or always-on Mac.
+9. **Monitor and stop:** Use [Actions](../../actions) to inspect failures. To stop all live posts immediately, set `PUBLISH_ENABLED=false`. To pause the entire schedule, disable the workflow in Actions. The local generator and GitHub check-ins need no paid LLM or always-on Mac.
 
 ## Security and practical limitations
 
 - **Never** paste Meta access tokens, app secrets, passwords, student data, or copyrighted textbook pages into this public repository, a GitHub issue, or a chat. Store Meta tokens only in encrypted GitHub Actions secrets.
-- An approved template alone **never** enables live posting. Both the config approval and \`PUBLISH_ENABLED=true\` are required.
-- A successfully published Instagram container is persisted as completed; ambiguous network failures stay \`pending\` until manually inspected. This prevents automatic duplicate-post attempts.
+- An approved template alone **never** enables live posting. Both the config approval and `PUBLISH_ENABLED=true` are required.
+- A successfully published Instagram container is persisted as completed; ambiguous network failures stay `pending` until manually inspected. This prevents automatic duplicate-post attempts.
 - Instagram/Meta may refuse an operation due to account type, expiring tokens, app review, quotas, permissions, or media rules. Some Story elements (stickers, music, interactive polls) cannot be created by this minimal API script.
 - Meta tokens may expire or be revoked. **Automatic OAuth renewal is not implemented**; refresh via the official Meta tools when necessary.
 - GitHub Actions scheduled jobs can be delayed or dropped. Each new check-in resumes that hour's due queue where possible, but cannot guarantee an exact posting minute.
@@ -53,13 +53,13 @@
 
 ## Developers: no external publishing package required
 
-\`\`\`bash
+```bash
 pip install -r requirements.txt
 python -m unittest discover -s tests -v
 python batch_publisher.py prepare --preview --slot 2026-11-15T08 --preview-quota 100
 python batch_publisher.py publish --preview --slot 2026-11-15T08 --preview-quota 100
-\`\`\`
+```
 
-These last two commands are **preview-only**. Real publishing requires \`python publisher.py publish --live\` with the user's current IST time, valid Meta credentials, a public JPEG URL, and both approval gates.
+These last two commands are **preview-only**. Real publishing requires `python publisher.py publish --live` with the user's current IST time, valid Meta credentials, a public JPEG URL, and both approval gates.
 
 API documentation: [Instagram Graph API](https://developers.facebook.com/docs/instagram-platform/), [Meta Page photo endpoint](https://developers.facebook.com/docs/graph-api/reference/photo/), [GitHub Actions schedules](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows).
